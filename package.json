@@ -1,0 +1,18 @@
+{
+  "name": "cortana",
+  "version": "0.0.1",
+  "description": "A bot for a friend's server",
+  "main": "app.js",
+  "scripts": {
+    "test": "node test.js",
+    "start": "node app.js"
+  },
+  "author": "bob620",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.2.1",
+    "erlpack": "github:hammerandchisel/erlpack",
+    "kagi": "github:toka-io/kagi",
+    "uws": "^8.14.1"
+  }
+}
