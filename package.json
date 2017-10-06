@@ -13,6 +13,8 @@
     "discord.js": "^11.2.1",
     "erlpack": "github:hammerandchisel/erlpack",
     "kagi": "github:toka-io/kagi",
+    "moment-timezone": "^0.5.13",
+    "random-js": "^1.0.8",
     "uws": "^8.14.1"
   }
 }

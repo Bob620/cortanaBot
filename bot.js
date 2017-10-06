@@ -1,6 +1,10 @@
 const EventEmitter = require('events');
 
-const Discord = require('discord.js');
+const Discord = require('discord.js'),
+      moment = require('moment-timezone'),
+      Random = require('random-js');
+
+const random = new Random(Random.engines.mt19937().autoSeed());
 
 /** Events
  * guildBanAdd
@@ -39,7 +43,31 @@ simpleStore = {
     guildBanRemove: '12779520',
     guildMemberAdd: '34303',
     guildMemberRemove: '157377'
-  }
+  },
+  countries: [
+    'America/Thule',
+    'America/New_York',
+    'Asia/Tokyo',
+    'Australia/Sydney',
+    'America/Los_Angeles',
+    'Europe/London',
+    'Antarctica/Macquarie',
+    'America/Inuvik'
+  ],
+  timeFormats: [
+    'dddd',
+    'dddd Do',
+    'dddd DDDo of the year YYYY',
+    'It\'s currently h:m:s',
+    'It\'s currently k:m:s',
+    'It\'s currently h:m:s:SSSS',
+    'It\'s currently k:m:s:SSSS',
+    'It\'s currently h:m:s Z',
+    'It\'s currently k:m:s Z',
+    'It\'s currently h:m:s:SSSS ZZ',
+    'It\'s currently k:m:s:SSSS ZZ',
+    'It\'s currently x'
+  ]
 }
 
 class Bot extends EventEmitter {
@@ -60,8 +88,22 @@ class Bot extends EventEmitter {
       this.updateStatus('connected');
     });
 
-    this.client.on('message', (message) => {
+    this.client.on('message', async (message) => {
+      try {
+        const content = message.cleanContent.toLowerCase();
+        const prefix = simpleStore.guilds[message.guild].prefix;
+        
+        console.log(this.heyMessage(content.slice(11), message));
 
+        if (content.startsWith('hey cortana')) {
+          console.log(this.heyMessage(content.slice(11), message));
+          message.reply(await this.heyMessage(content.slice(11), message));
+        } else if (content.startsWith(prefix)) {
+          this.commandMessage(content.slice(prefix.length), message);
+        }
+      } catch(err) {
+        console.log(err);
+      }
     });
 
     this.client.on('guildBanAdd', async (guild, user) => {
@@ -115,19 +157,77 @@ class Bot extends EventEmitter {
         }
       } catch(err) {}
     }).on('channelCreate', async (channel) => {
-      
+      try {
+        const logChannel = await this.getLogChannelForEvent(channel.guild, 'channelCreate');
+
+        logChannel.send({embed: {
+          description: `A channel was created at ${new Date().toUTCString()}`,
+          color: simpleStore.colors.channelCreate,
+          title: `${channel.name} (${channel.id})`,
+        }});
+      } catch(err) {}
     }).on('channelDelete', async (channel) => {
-      
+      try {
+        const logChannel = await this.getLogChannelForEvent(channel.guild, 'channelDelete');
+
+        logChannel.send({embed: {
+          description: `A channel was deleted at ${new Date().toUTCString()}`,
+          color: simpleStore.colors.channelDelete,
+          title: `${channel.name} (${channel.id})`,
+        }});
+      } catch(err) {}
     }).on('channelUpdate', async (oldChannel, newChannel) => {
-      
+      try {
+//        const logChannel = await this.getLogChannelForEvent(oldChannel.guild, 'channelUpdate');
+//
+//        logChannel.send({embed: {
+//          description: `A member left at ${new Date().toUTCString()}`,
+//          color: simpleStore.colors.guildMemberRemove,
+//          title: `${member.user.username}#${member.user.discriminator} (${member.id})`,
+//        }});
+      } catch(err) {}
     }).on('emojiCreate', async (emote) => {
-      
+      try {
+        const logChannel = await this.getLogChannelForEvent(emote.guild, 'emojiCreate');
+
+        logChannel.send({embed: {
+          description: `A emoji was created at ${new Date().toUTCString()}`,
+          color: simpleStore.colors.emojiCreate,
+          title: `${emote.name} (${emote.id})`,
+          thumbnail: {url: emote.url}
+        }});
+      } catch(err) {}
     }).on('emojiDelete', async (emote) => {
-      
+      try {
+        const logChannel = await this.getLogChannelForEvent(emote.guild, 'emojiDelete');
+
+        logChannel.send({embed: {
+          description: `A emoji was deleted at ${new Date().toUTCString()}`,
+          color: simpleStore.colors.emojiDelete,
+          title: `${emote.name} (${emote.id})`,
+          thumbnail: {url: emote.url}
+        }});
+      } catch(err) {}
     }).on('roleCreate', async (role) => {
-      
+      try {
+        const logChannel = await this.getLogChannelForEvent(role.guild, 'roleCreate');
+
+        logChannel.send({embed: {
+          description: `A role was created at ${new Date().toUTCString()}`,
+          color: simpleStore.colors.roleCreate,
+          title: `${role.name} (${role.id})`,
+        }});
+      } catch(err) {}
     }).on('roleDelete', async (role) => {
-      
+      try {
+        const logChannel = await this.getLogChannelForEvent(role.guild, 'roleDelete');
+
+        logChannel.send({embed: {
+          description: `A role was deleted at ${new Date().toUTCString()}`,
+          color: simpleStore.colors.roleDelete,
+          title: `${role.name} (${role.id})`,
+        }});
+      } catch(err) {}
     });
   }
 
@@ -145,6 +245,35 @@ class Bot extends EventEmitter {
     } catch(err) {
       throw new Error('unable to get log channel of guild '+guild.id);
     }
+  }
+
+  async heyMessage(content, {guild, member}) {
+    try {
+      switch(content.trim()) {
+        case 'what time is it':
+        case 'what time is it?':
+        case 'what is the time':
+        case 'what is the time?':
+          const country = simpleStore.countries[random.integer(0, simpleStore.countries.length)];
+          const format = simpleStore.countries[random.integer(0, simpleStore.countries.length)];
+
+          console.log(country);
+          console.log(format);
+
+          return `It is currently ${moment.tz(Date.now(), 'UTC').tz(country).format(format)}`;
+          break;
+        default:
+          console.log('rip');
+          break;
+      }
+    } catch(err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  async commandMessage(content) {
+
   }
 
   updateStatus(newStatus) {
