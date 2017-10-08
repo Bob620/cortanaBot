@@ -57,16 +57,16 @@ simpleStore = {
   timeFormats: [
     'dddd',
     'dddd Do',
-    'dddd DDDo of the year YYYY',
-    'It\'s currently h:m:s',
-    'It\'s currently k:m:s',
-    'It\'s currently h:m:s:SSSS',
-    'It\'s currently k:m:s:SSSS',
-    'It\'s currently h:m:s Z',
-    'It\'s currently k:m:s Z',
-    'It\'s currently h:m:s:SSSS ZZ',
-    'It\'s currently k:m:s:SSSS ZZ',
-    'It\'s currently x'
+    'dddd DDDo YYYY',
+    'h:m:s',
+    'k:m:s',
+    'h:m:s:SSSS',
+    'k:m:s:SSSS',
+    'h:m:s Z',
+    'k:m:s Z',
+    'h:m:s:SSSS ZZ',
+    'k:m:s:SSSS ZZ',
+    'x'
   ]
 }
 
@@ -91,12 +91,9 @@ class Bot extends EventEmitter {
     this.client.on('message', async (message) => {
       try {
         const content = message.cleanContent.toLowerCase();
-        const prefix = simpleStore.guilds[message.guild].prefix;
-        
-        console.log(this.heyMessage(content.slice(11), message));
+        const prefix = simpleStore.guilds[message.guild.id].prefix;
 
         if (content.startsWith('hey cortana')) {
-          console.log(this.heyMessage(content.slice(11), message));
           message.reply(await this.heyMessage(content.slice(11), message));
         } else if (content.startsWith(prefix)) {
           this.commandMessage(content.slice(prefix.length), message);
@@ -254,20 +251,16 @@ class Bot extends EventEmitter {
         case 'what time is it?':
         case 'what is the time':
         case 'what is the time?':
-          const country = simpleStore.countries[random.integer(0, simpleStore.countries.length)];
-          const format = simpleStore.countries[random.integer(0, simpleStore.countries.length)];
-
-          console.log(country);
-          console.log(format);
+          const country = simpleStore.countries[random.integer(0, simpleStore.countries.length-1)];
+          const format = simpleStore.timeFormats[random.integer(0, simpleStore.timeFormats.length-1)];
 
           return `It is currently ${moment.tz(Date.now(), 'UTC').tz(country).format(format)}`;
           break;
         default:
-          console.log('rip');
+          throw '';
           break;
       }
     } catch(err) {
-      console.log(err);
       throw err;
     }
   }
